@@ -49,6 +49,7 @@ Create AWS Lambda environment variables for the following:
 * `client_key` with the client key you received after the OAuth login
 * `client_secret` with the client secret you received after the OAuth login
 * `refresh_token` with the refresh-token you received after the OAuth login
+* `main_player_name` name of the player as set in the app who should be the leader of the group
 
 Schedule and have fun.
 
