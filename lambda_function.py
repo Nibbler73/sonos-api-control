@@ -38,13 +38,18 @@ def lambda_handler(event, context):
     # My players
     players = jsonObj["players"]
     playerIds = []
+    random_player_id = None
     for player in players:
         playerIds.append(player["id"])
+        if player["name"] == os.environ["main_player_name"]:
+            random_player_id = player["id"]
+
+    if random_player_id is None:
+        random_player_id = playerIds[0]
 
     #
     # Create a Group with all Players
-    my_group_request = {'playerIds' : playerIds}
-    random_player_id = playerIds[0]
+    my_group_request = {'playerIds' : playerIds, 'musicContextGroupId' : random_player_id}
     response = requests.post('https://api.ws.sonos.com/control/api/v1/households/' + household + '/groups/createGroup', json = my_group_request, headers=my_headers)
     jsonObj = response.json()
 
@@ -64,4 +69,5 @@ def lambda_handler(event, context):
         'new_group_id': new_group_id,
         'body': json.dumps(jsonObj)
     }
+
 
