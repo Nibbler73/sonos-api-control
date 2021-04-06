@@ -21,6 +21,7 @@ def lambda_handler(event, context):
 
     # Authorization Token
     my_headers = {'Authorization' : 'Bearer ' + access_token, 'Content-Type' : 'application/json'}
+    #print("Access Token: " + access_token)
 
     #
     # Lookup Household
@@ -51,7 +52,7 @@ def lambda_handler(event, context):
         groupPlaybackState = group["playbackState"]
 
     # Stop if playing
-    if groupPlaybackState != 'PLAYBACK_STATE_PAUSED':
+    if (groupPlaybackState != 'PLAYBACK_STATE_PAUSED') and (groupPlaybackState != 'PLAYBACK_STATE_IDLE'):
         print ('the group is currently playing, exiting')
         return {
             'statusCode': 200,
