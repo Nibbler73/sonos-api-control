@@ -8,6 +8,11 @@ import base64
 # Sonos API
 # https://developer.sonos.com/reference/control-api/group-volume/set-volume/
 
+def dump(obj):
+   for attr in dir(obj):
+       if hasattr( obj, attr ):
+           print( "obj.%s = %s" % (attr, getattr(obj, attr)))
+
 def lambda_handler(event, context):
 
     # Authorize and get access_token
@@ -21,6 +26,7 @@ def lambda_handler(event, context):
 
     # Authorization Token
     my_headers = {'Authorization' : 'Bearer ' + access_token, 'Content-Type' : 'application/json'}
+    #print("Access Token: " + access_token)
 
     #
     # Lookup Household
@@ -35,22 +41,26 @@ def lambda_handler(event, context):
     response = requests.get('https://api.ws.sonos.com/control/api/v1/households/' + household + '/groups', headers=my_headers)
     jsonObj = response.json()
 
+    # My Groups
+    groups = jsonObj["groups"]
+    main_group_id = None
+    for group in groups:
+        if group["name"] == os.environ["main_player_name"]:
+            main_group_id = group["id"]
+    if main_group_id is None:
+        main_group_id = groups[0]["id"]
+
     # My players
     players = jsonObj["players"]
     playerIds = []
-    random_player_id = None
     for player in players:
         playerIds.append(player["id"])
-        if player["name"] == os.environ["main_player_name"]:
-            random_player_id = player["id"]
-
-    if random_player_id is None:
-        random_player_id = playerIds[0]
 
     #
     # Create a Group with all Players
-    my_group_request = {'playerIds' : playerIds, 'musicContextGroupId' : random_player_id}
+    my_group_request = {'playerIds' : playerIds, 'musicContextGroupId' : main_group_id}
     response = requests.post('https://api.ws.sonos.com/control/api/v1/households/' + household + '/groups/createGroup', json = my_group_request, headers=my_headers)
+    #dump( response )
     jsonObj = response.json()
 
     # my new Group's ID
@@ -65,7 +75,7 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'household': household,
         'my_group_request': my_group_request,
-        'random_player_id': random_player_id,
+        'main_group_id': main_group_id,
         'new_group_id': new_group_id,
         'body': json.dumps(jsonObj)
     }
